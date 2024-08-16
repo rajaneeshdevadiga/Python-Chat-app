@@ -1,30 +1,18 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
     <title>Chat App</title>
+    <script src="https://cdn.socket.io/4.1.2/socket.io.min.js"></script>
+    <script src="/static/script.js"></script>
 </head>
 <body>
-    <h1>Welcome to the Chat Room</h1>
-    <div id="chat">
-        <input type="text" id="message" placeholder="Type your message...">
-        <button onclick="sendMessage()">Send</button>
-    </div>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.0/socket.io.js"></script>
-    <script>
-        const socket = io();
-
-        function sendMessage() {
-            const message = document.getElementById('message').value;
-            socket.emit('message', {'data': message, 'room': 'default'});
-        }
-
-        socket.on('message', function(msg) {
-            const chat = document.getElementById('chat');
-            chat.innerHTML += `<p>${msg}</p>`;
-        });
-
-        socket.emit('join', {'username': 'user1', 'room': 'default'});
-    </script>
+    <h1>Chat Room</h1>
+    <input id="username" placeholder="Enter your name">
+    <input id="room" placeholder="Enter room name">
+    <textarea id="messages" rows="10" cols="50" readonly></textarea>
+    <br>
+    <input id="message" placeholder="Enter your message">
+    <button onclick="sendMessage()">Send</button>
+    <button onclick="joinRoom()">Join Room</button>
 </body>
 </html>
