@@ -1,6 +1,8 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chat App</title>
     <link rel="stylesheet" href="/static/style.css">
     <script src="https://cdn.socket.io/4.1.2/socket.io.min.js"></script>
@@ -18,7 +20,9 @@
             <input id="message" class="input-field" placeholder="Enter your message">
             <button onclick="sendMessage()" class="btn">Send</button>
             <button onclick="joinRoom()" class="btn">Join Room</button>
+            <button onclick="openCamera()" class="btn">Take Selfie</button>
         </div>
-    </div>
-</body>
-</html>
+
+        <!-- Hidden elements for camera -->
+        <div id="camera-container" style="display: none;">
+            <video id="camera" autoplay></
