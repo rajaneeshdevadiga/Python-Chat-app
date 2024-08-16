@@ -2,17 +2,23 @@
 <html>
 <head>
     <title>Chat App</title>
+    <link rel="stylesheet" href="/static/style.css">
     <script src="https://cdn.socket.io/4.1.2/socket.io.min.js"></script>
     <script src="/static/script.js"></script>
 </head>
 <body>
-    <h1>Chat Room</h1>
-    <input id="username" placeholder="Enter your name">
-    <input id="room" placeholder="Enter room name">
-    <textarea id="messages" rows="10" cols="50" readonly></textarea>
-    <br>
-    <input id="message" placeholder="Enter your message">
-    <button onclick="sendMessage()">Send</button>
-    <button onclick="joinRoom()">Join Room</button>
+    <div class="container">
+        <h1>Chat Room</h1>
+        <div class="input-group">
+            <input id="username" class="input-field" placeholder="Enter your name">
+            <input id="room" class="input-field" placeholder="Enter room name">
+        </div>
+        <textarea id="messages" class="messages" readonly></textarea>
+        <div class="input-group">
+            <input id="message" class="input-field" placeholder="Enter your message">
+            <button onclick="sendMessage()" class="btn">Send</button>
+            <button onclick="joinRoom()" class="btn">Join Room</button>
+        </div>
+    </div>
 </body>
 </html>
