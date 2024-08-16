@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request
-from flask_socketio import SocketIO, join_room, leave_room, send
+from flask_socketio import SocketIO, join_room, leave_room, send, emit
 import os
 
 app = Flask(__name__)
@@ -29,12 +29,11 @@ def handle_message(data):
 
     # Handling selfie images
     if 'selfie' in data:
-        selfie_data = data['selfie']
         selfie_message = {
             'username': username,
-            'selfie': selfie_data
+            'selfie': data['selfie']
         }
-        socketio.emit('message', selfie_message, room=room)
+        emit('message', selfie_message, room=room)
 
 @socketio.on('leave')
 def on_leave(data):
