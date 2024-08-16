@@ -24,5 +24,23 @@ jobs:
 
     - name: Build and push Docker image
       run: |
-        docker build -t raji7633/chat-app:${{ github.sha }} .
-        docker push raji7633/chat-app:${{ github.sha }}
+        docker build -t raji7633/chat-app:latest .
+        docker push raji7633/chat-app:latest
+
+    - name: Log in to Amazon ECS
+      uses: aws-actions/amazon-ecs-login@v1
+      with:
+        region: ${{ secrets.AWS_REGION }}
+
+    - name: Deploy to AWS ECS
+      run: |
+        aws ecs update-service \
+          --cluster ${{ secrets.ECS_CLUSTER }} \
+          --service ${{ secrets.ECS_SERVICE }} \
+          --force-new-deployment \
+          --region ${{ secrets.AWS_REGION }}
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+   
