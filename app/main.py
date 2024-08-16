@@ -1,44 +1,47 @@
 from flask import Flask, render_template, request
-from flask_socketio import SocketIO, join_room, send
+from flask_socketio import SocketIO, join_room, leave_room, send
+import os
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'secret!'
+app.config['SECRET_KEY'] = os.urandom(24)
 socketio = SocketIO(app)
-
-# In-memory store for messages
-chat_history = {}
 
 @app.route('/')
 def index():
     return render_template('index.html')
-
-@socketio.on('message')
-def handle_message(msg):
-    room = msg['room']
-    message = msg['data']
-    username = msg.get('username', 'Anonymous')
-
-    # Store message in memory
-    if room not in chat_history:
-        chat_history[room] = []
-    chat_history[room].append(f"[{username}]: {message}")
-
-    # Broadcast the message to other users in the room
-    send(f"[{username}]: {message}", room=room)
 
 @socketio.on('join')
 def on_join(data):
     username = data['username']
     room = data['room']
     join_room(room)
+    send(f'{username} has joined the room.', room=room)
 
-    # Send chat history to the user who joined
-    if room in chat_history:
-        for message in chat_history[room]:
-            send(message, room=room)
+@socketio.on('message')
+def handle_message(data):
+    room = data['room']
+    username = data['username']
 
-    # Notify others in the room of the new participant
-    send(f'{username} has entered the room.', room=room)
+    # Handling text messages
+    if 'data' in data:
+        message = f'{username}: {data["data"]}'
+        send(message, room=room)
+
+    # Handling selfie images
+    if 'selfie' in data:
+        selfie_data = data['selfie']
+        selfie_message = {
+            'username': username,
+            'selfie': selfie_data
+        }
+        socketio.emit('message', selfie_message, room=room)
+
+@socketio.on('leave')
+def on_leave(data):
+    username = data['username']
+    room = data['room']
+    leave_room(room)
+    send(f'{username} has left the room.', room=room)
 
 if __name__ == '__main__':
     socketio.run(app, host='0.0.0.0', port=5000)
