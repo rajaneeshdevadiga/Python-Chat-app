@@ -24,8 +24,8 @@ jobs:
 
     - name: Build and push Docker image
       run: |
-        docker build -t raji7633/chat-app:v2 .
-        docker push raji7633/chat-app:v2
+        docker build -t raji7633/chat-app:v3 
+        docker push raji7633/chat-app:v3
 
     - name: Set up AWS CLI
       uses: aws-actions/configure-aws-credentials@v1
@@ -38,7 +38,7 @@ jobs:
       run: |
         aws ecs create-cluster --cluster-name chat-app-cluster || echo "Cluster already exists"
 
-    - name: Create Task Definition
+    - name: Register Task Definition
       run: |
         TASK_DEFINITION=$(cat <<EOF
         {
@@ -47,7 +47,7 @@ jobs:
           "containerDefinitions": [
             {
               "name": "chat-app-container",
-              "image": "raji7633/chat-app:v2",
+              "image": "raji7633/chat-app:v3",
               "memory": 512,
               "cpu": 256,
               "essential": true,
@@ -69,17 +69,18 @@ jobs:
         echo "$TASK_DEFINITION" > task-definition.json
         aws ecs register-task-definition --cli-input-json file://task-definition.json
 
-    - name: Create ECS Service
+    - name: Create or Update ECS Service
       run: |
         SERVICE_NAME=$(aws ecs describe-services --cluster chat-app-cluster --services chat-app-service --query "services[0].serviceName" --output text 2>/dev/null || echo "none")
         if [ "$SERVICE_NAME" == "none" ]; then
+          echo "Creating service..."
           aws ecs create-service \
             --cluster chat-app-cluster \
             --service-name chat-app-service \
             --task-definition chat-app-task \
             --desired-count 1 \
             --launch-type FARGATE \
-            --network-configuration "awsvpcConfiguration={subnets=[subnet-12345,subnet-67890],securityGroups=[sg-0123456789abcdef0],assignPublicIp=ENABLED}"
+            --network-configuration "awsvpcConfiguration={subnets=[subnet-0ce2c05e1bf7aaccc,subnet-054b3215eb590a52c],securityGroups=[sg-0072874a3e4210f1c],assignPublicIp=ENABLED}"
         else
           echo "Service already exists, updating..."
           aws ecs update-service \
