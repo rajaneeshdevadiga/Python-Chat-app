@@ -25,5 +25,5 @@ jobs:
     - name: Build and push Docker image
       run: |
 
-        docker build -t raji7633/chat-app:style .
-        docker push raji7633/chat-app:style
+        docker build -t raji7633/chat-app:v1 .
+        docker push raji7633/chat-app:v1
