@@ -1,4 +1,4 @@
-name: CI/CD Pipeline
+name: Deploy to AWS ECS
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
       - main
 
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
 
     steps:
@@ -24,6 +24,67 @@ jobs:
 
     - name: Build and push Docker image
       run: |
+        docker build -t raji7633/chat-app:v2 .
+        docker push raji7633/chat-app:v2
 
-        docker build -t raji7633/chat-app:v1 .
-        docker push raji7633/chat-app:v1
+    - name: Set up AWS CLI
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ secrets.AWS_REGION }}
+
+    - name: Create ECS Cluster
+      run: |
+        aws ecs create-cluster --cluster-name chat-app-cluster || echo "Cluster already exists"
+
+    - name: Create Task Definition
+      run: |
+        TASK_DEFINITION=$(cat <<EOF
+        {
+          "family": "chat-app-task",
+          "networkMode": "awsvpc",
+          "containerDefinitions": [
+            {
+              "name": "chat-app-container",
+              "image": "raji7633/chat-app:v2",
+              "memory": 512,
+              "cpu": 256,
+              "essential": true,
+              "portMappings": [
+                {
+                  "containerPort": 5000,
+                  "hostPort": 5000,
+                  "protocol": "tcp"
+                }
+              ]
+            }
+          ],
+          "requiresCompatibilities": ["FARGATE"],
+          "cpu": "256",
+          "memory": "512"
+        }
+        EOF
+        )
+        echo "$TASK_DEFINITION" > task-definition.json
+        aws ecs register-task-definition --cli-input-json file://task-definition.json
+
+    - name: Create ECS Service
+      run: |
+        SERVICE_NAME=$(aws ecs describe-services --cluster chat-app-cluster --services chat-app-service --query "services[0].serviceName" --output text 2>/dev/null || echo "none")
+        if [ "$SERVICE_NAME" == "none" ]; then
+          aws ecs create-service \
+            --cluster chat-app-cluster \
+            --service-name chat-app-service \
+            --task-definition chat-app-task \
+            --desired-count 1 \
+            --launch-type FARGATE \
+            --network-configuration "awsvpcConfiguration={subnets=[subnet-12345,subnet-67890],securityGroups=[sg-0123456789abcdef0],assignPublicIp=ENABLED}"
+        else
+          echo "Service already exists, updating..."
+          aws ecs update-service \
+            --cluster chat-app-cluster \
+            --service chat-app-service \
+            --task-definition chat-app-task \
+            --force-new-deployment
+        fi
