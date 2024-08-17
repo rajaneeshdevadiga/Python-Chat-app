@@ -24,7 +24,7 @@ jobs:
 
     - name: Build and push Docker image
       run: |
-        docker build -t raji7633/chat-app:v3 
+        docker build -t raji7633/chat-app:v3 .
         docker push raji7633/chat-app:v3
 
     - name: Set up AWS CLI
