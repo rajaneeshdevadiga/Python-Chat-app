@@ -4,3 +4,5 @@ A web-based chat application where users can join different rooms and chat with 
 
 
 Test 1
+Test 2
+Test 3
