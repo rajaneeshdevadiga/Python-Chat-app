@@ -16,4 +16,4 @@ spec:
       - name: chat-app
         image: raji7633/chat-app:latest
         ports:
-        - containerPort: 5000
+        - containerPort: 80
